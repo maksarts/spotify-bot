@@ -20,9 +20,11 @@ public class Starter implements CommandLineRunner {
         System.out.println("START");
 //        spotifyUtils.getSongs("the foreshadowing departure", "track");
 
-        log.info("оксимирон={}", youtubeUtils.getVideoUrl("oxxxymiron", "тентакли"));
-        log.info("хеллиантус={}", youtubeUtils.getVideoUrl("HELLIANTHUS", "луна"));
-        log.info("дайте танк={}", youtubeUtils.getVideoUrl("Дайте танк (!)", "Мы"));
-        log.info("muse={}", youtubeUtils.getVideoUrl("Muse", "Resistance"));
+//        log.info("оксимирон={}", youtubeUtils.getVideoUrl("oxxxymiron", "тентакли"));
+//        log.info("хеллиантус={}", youtubeUtils.getVideoUrl("HELLIANTHUS", "луна"));
+//        log.info("дайте танк={}", youtubeUtils.getVideoUrl("Дайте танк (!)", "Мы"));
+//        log.info("muse={}", youtubeUtils.getVideoUrl("Muse", "Resistance"));
+
+        youtubeUtils.downloadMp3("oxxxymiron", "CCTV");
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -18,7 +19,7 @@ import ru.maksarts.spotifybot.dto.TracksSearchResponse;
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
-@Component
+@Service
 public class SpotifyUtils {
 
     public static final String BASE_URL = "https://api.spotify.com/v1/";
