@@ -1,4 +1,4 @@
-package ru.maksarts.spotifybot.spotify;
+package ru.maksarts.spotifybot.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.codec.binary.Base64;

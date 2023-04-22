@@ -1,4 +1,4 @@
-package ru.maksarts.spotifybot.youtube;
+package ru.maksarts.spotifybot.services;
 
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tomcat.util.http.fileupload.IOUtils;
@@ -41,8 +41,12 @@ public class YoutubeUtils {
         try {
             String videoUrl = getVideoUrl(artist, song);
 
-            //TODO передавать туда ссылку)))
-            ProcessBuilder processBuilder = new ProcessBuilder("python", "pyscrypts/youtube_download.py");
+            //"/usr/bin/env python3 script.py"
+            ProcessBuilder processBuilder = new ProcessBuilder("python",
+                                                                        "pyscripts/youtube_download.py",
+                                                                        "--link", videoUrl,
+                                                                        "--path", "../test_download/",
+                                                                        "--ffmpeg", "bin");
             processBuilder.redirectErrorStream(true);
 
             Process process = processBuilder.start();
@@ -53,12 +57,10 @@ public class YoutubeUtils {
                 line = bufferedReader.readLine();
             }
 
-            log.info(new BufferedReader(new InputStreamReader(process.getInputStream())).lines().collect(Collectors.joining("\n")));
-
         } catch (Exception ex){
             ex.printStackTrace();
+            return false;
         }
-
         return true;
     }
 
@@ -83,7 +85,6 @@ public class YoutubeUtils {
                 return videoUrl;
             }
         }
-        //TODO "/usr/bin/env python3 script.py"
 
         return null;
     }

@@ -4,8 +4,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
-import ru.maksarts.spotifybot.spotify.SpotifyUtils;
-import ru.maksarts.spotifybot.youtube.YoutubeUtils;
+import ru.maksarts.spotifybot.services.SpotifyUtils;
+import ru.maksarts.spotifybot.services.YoutubeUtils;
 
 @Component
 @Slf4j
