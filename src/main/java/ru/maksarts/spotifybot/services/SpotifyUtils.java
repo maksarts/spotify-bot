@@ -51,10 +51,11 @@ public class SpotifyUtils {
             log.info("Re-auth...");
             token = sendAuth();
             response = sendSearchRequest(q, type, token);
-            if (response.getStatusCode().is2xxSuccessful()){
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null){
                 return response.getBody().getTracks().getItems().get(0).getExternal_urls().getSpotify();
             }
             else{
+                if (response.getBody() == null) log.error("Response body=null");
                 throw new RuntimeException("Search failed: " + response.getStatusCode());
             }
         }

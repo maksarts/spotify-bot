@@ -25,6 +25,6 @@ public class Starter implements CommandLineRunner {
 //        log.info("дайте танк={}", youtubeUtils.getVideoUrl("Дайте танк (!)", "Мы"));
 //        log.info("muse={}", youtubeUtils.getVideoUrl("Muse", "Resistance"));
 
-        youtubeUtils.downloadMp3("oxxxymiron", "CCTV");
+//        youtubeUtils.downloadMp3("Гражданская оборона", "Солнцеворот");
     }
 }

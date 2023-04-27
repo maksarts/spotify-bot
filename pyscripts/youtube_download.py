@@ -4,17 +4,13 @@ import argparse
 parser = argparse.ArgumentParser(description="Arguments for download tracks",
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 parser.add_argument("-l", "--link", help="youtube url")
-parser.add_argument("-p", "--path", help="download path")
-parser.add_argument("-f", "--ffmpeg", help="ffmpeg location")
+parser.add_argument("-p", "--path", help="download path", default="../download/")
+parser.add_argument("-f", "--ffmpeg", help="ffmpeg location", default="../bin")
 args = parser.parse_args()
 
 ffmpeg_path = args.ffmpeg
 path = args.path
 yt_url = args.link
-
-if not ffmpeg_path: ffmpeg_path = "../bin"
-if not path: path = "../test_download/"
-if not yt_url: yt_url = 'https://www.youtube.com/watch?v=1ocUkgZn5S0'
 
 options = {
                 # PERMANENT options

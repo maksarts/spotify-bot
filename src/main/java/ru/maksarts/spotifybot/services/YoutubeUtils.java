@@ -41,7 +41,6 @@ public class YoutubeUtils {
         try {
             String videoUrl = getVideoUrl(artist, song);
 
-            //"/usr/bin/env python3 script.py"
             ProcessBuilder processBuilder = new ProcessBuilder("python",
                                                                         "pyscripts/youtube_download.py",
                                                                         "--link", videoUrl,
