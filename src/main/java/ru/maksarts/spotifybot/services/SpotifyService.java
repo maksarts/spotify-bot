@@ -1,13 +1,9 @@
 package ru.maksarts.spotifybot.services;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.tomcat.util.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.lang.NonNull;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
@@ -15,12 +11,13 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.maksarts.spotifybot.dto.TokenResponse;
 import ru.maksarts.spotifybot.dto.TracksSearchResponse;
+import ru.maksarts.spotifybot.dto.types.Track;
 
 import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @Service
-public class SpotifyUtils {
+public class SpotifyService {
 
     public static final String BASE_URL = "https://api.spotify.com/v1/";
     public static final String AUTH_URL = "https://accounts.spotify.com/api/token";
@@ -28,18 +25,24 @@ public class SpotifyUtils {
     private static final String CLIENT_ID = "4551cb9f03f2457983c2e4f2ccf78610";
     private static final String CLIENT_SECRET = "1ab3ced6ed584e35a65c521dc9b85853"; //TODO переложить в конфиг
 
+    private static final String TRACK_TYPE = "track";
+
     @Autowired
     private RestTemplate restTemplate;
 
     private String token;
 
-    public String getSongs(String q, String type){
+    public Track getTracks(String q){
+        return getTracks(q, TRACK_TYPE);
+    }
+    public Track getTracks(String q, String type){
         if (this.token == null) token = sendAuth();
         ResponseEntity<TracksSearchResponse> response = sendSearchRequest(q, type, token);
 
         if (response.getStatusCode().is2xxSuccessful()){
             if (response.getBody() != null) {
-                return response.getBody().getTracks().getItems().get(0).getExternal_urls().getSpotify();
+                //log.info("response={}", response.getBody().toString());
+                return response.getBody().getTracks();
             }
             else{
                 log.warn("status_code = {}, response body = null", response.getStatusCode());
@@ -52,10 +55,12 @@ public class SpotifyUtils {
             token = sendAuth();
             response = sendSearchRequest(q, type, token);
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null){
-                return response.getBody().getTracks().getItems().get(0).getExternal_urls().getSpotify();
+                return response.getBody().getTracks();
             }
             else{
-                if (response.getBody() == null) log.error("Response body=null");
+                if (response.getBody() == null){
+                    throw new RuntimeException("Search failed: response body=null");
+                }
                 throw new RuntimeException("Search failed: " + response.getStatusCode());
             }
         }
@@ -90,17 +95,16 @@ public class SpotifyUtils {
     private ResponseEntity<TracksSearchResponse> sendSearchRequest(String q, String type, @NonNull String token){
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(token);
+        headers.set("Accept-Encoding", "gzip, deflate, br");
 
-        String urlTemplate = UriComponentsBuilder.fromHttpUrl(BASE_URL + "/search")
-                                                .queryParam("q", q)
-                                                .queryParam("type", type)
-                                                .encode()
-                                                .toUriString();
+        String url = BASE_URL + "/search"
+                            + "?q=" + q
+                            + "&type=" + type;
 
-        log.info("request url = {}", urlTemplate);
+        log.info("request url = {}", url);
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(null, headers);
-        ResponseEntity<TracksSearchResponse> response = restTemplate.exchange(urlTemplate,
+        ResponseEntity<TracksSearchResponse> response = restTemplate.exchange(url,
                                                                             HttpMethod.GET,
                                                                             request,
                                                                             TracksSearchResponse.class);

@@ -1,15 +1,11 @@
 package ru.maksarts.spotifybot.dto.types;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
 import java.io.Serializable;
 import java.util.ArrayList;
 
-@Getter
-@Setter
-@JsonAutoDetect
+@Data
 public class Album implements Serializable {
     private ArrayList<Artist> artists;
     private ExternalUrl external_urls;

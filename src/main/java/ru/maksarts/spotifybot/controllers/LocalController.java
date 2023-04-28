@@ -5,13 +5,13 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.maksarts.spotifybot.services.SpotifyUtils;
+import ru.maksarts.spotifybot.services.SpotifyService;
 
 @RestController
 public class LocalController {
 
     @Autowired
-    SpotifyUtils spotifyUtils;
+    SpotifyService spotifyUtils;
 
     @RequestMapping("/")
     public String index() {
@@ -20,6 +20,6 @@ public class LocalController {
 
     @GetMapping("/search")
     public String mySearch(@RequestParam(value="q") String q, @RequestParam(value="type", required = false, defaultValue = "track") String type) {
-        return spotifyUtils.getSongs(q, type);
+        return spotifyUtils.getTracks(q, type).getItems().get(0).getExternal_urls().getSpotify();
     }
 }

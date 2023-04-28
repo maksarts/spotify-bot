@@ -1,24 +1,39 @@
 package ru.maksarts.spotifybot;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.protocol.HTTP;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
-import ru.maksarts.spotifybot.services.SpotifyUtils;
-import ru.maksarts.spotifybot.services.YoutubeUtils;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+import ru.maksarts.spotifybot.configs.RestTemplateConfig;
+import ru.maksarts.spotifybot.dto.TracksSearchResponse;
+import ru.maksarts.spotifybot.services.SpotifyService;
+import ru.maksarts.spotifybot.services.YoutubeService;
+
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 @Slf4j
 public class Starter implements CommandLineRunner {
     @Autowired
-    SpotifyUtils spotifyUtils;
+    SpotifyService spotifyUtils;
     @Autowired
-    YoutubeUtils youtubeUtils;
+    YoutubeService youtubeUtils;
+    @Autowired
+    RestTemplate restTemplate;
 
     @Override
     public void run(String... args) throws Exception {
         System.out.println("START");
-//        spotifyUtils.getSongs("the foreshadowing departure", "track");
+//        log.info(spotifyUtils.getTracks("гражданская оборона", "track").toString());
 
 //        log.info("оксимирон={}", youtubeUtils.getVideoUrl("oxxxymiron", "тентакли"));
 //        log.info("хеллиантус={}", youtubeUtils.getVideoUrl("HELLIANTHUS", "луна"));
