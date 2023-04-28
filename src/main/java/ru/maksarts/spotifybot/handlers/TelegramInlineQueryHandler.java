@@ -20,6 +20,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Controller
@@ -28,15 +30,54 @@ public class TelegramInlineQueryHandler {
     private SpotifyService spotifyService;
     @Autowired
     private YoutubeService youtubeService;
+
+    private static final Pattern patternFile = Pattern.compile("(/file)");
+
     public AnswerInlineQuery handle(InlineQuery inlineQuery){
-        String query = inlineQuery.getQuery().toLowerCase(Locale.ROOT);
+        String query = inlineQuery.getQuery().toLowerCase(Locale.ROOT).trim();
         if (!query.isEmpty()) {
-            Track tracks = spotifyService.getTracks(query);
-            List<InlineQueryResult> results = makeResults(tracks);
-            return converteResultsToResponse(inlineQuery, results);
-        } else {
-            return converteResultsToResponse(inlineQuery, new ArrayList<>());
+            if (query.charAt(0) == '/') {
+
+                Matcher matcher = patternFile.matcher(query);
+                if (matcher.find()) {
+                    query = query.replaceAll("(/file )", "");
+                    Track tracks = spotifyService.getTracks(query);
+                    List<InlineQueryResult> results = makeSongsResults(tracks);
+                    return converteResultsToResponse(inlineQuery, results);
+                }
+
+            } else {
+                Track tracks = spotifyService.getTracks(query);
+                List<InlineQueryResult> results = makeResults(tracks);
+                return converteResultsToResponse(inlineQuery, results);
+            }
         }
+        return converteResultsToResponse(inlineQuery, new ArrayList<>());
+    }
+
+    private static List<InlineQueryResult> makeSongsResults(Track tracks){
+        List<InlineQueryResult> results = new ArrayList<>();
+        ArrayList<Item> items = tracks.getItems();
+        int i = 0;
+        while (i < 20 && i < items.size()) {
+            Item item = items.get(i);
+            String artists = makeArtists(item.getArtists());
+            String songName = item.getName();
+            String spotifyUrl = item.getExternal_urls().getSpotify();
+
+            InputTextMessageContent messageContent = new InputTextMessageContent();
+            messageContent.setMessageText(spotifyUrl);
+
+            InlineQueryResultAudio audio = new InlineQueryResultAudio();
+            audio.setId(String.valueOf(i));
+            audio.setTitle(artists + " - " + songName);
+            audio.setCaption(item.getExternal_urls().getSpotify());
+            audio.setAudioUrl(item.getPreview_url());
+            results.add(audio);
+            i++;
+            //log.info("Added to result: {} - {}", artists, songName);
+        }
+        return results;
     }
 
     private static List<InlineQueryResult> makeResults(Track tracks){
@@ -52,13 +93,6 @@ public class TelegramInlineQueryHandler {
 
             InputTextMessageContent messageContent = new InputTextMessageContent();
             messageContent.setMessageText(spotifyUrl);
-
-//            InlineQueryResultAudio audio = new InlineQueryResultAudio();
-//            audio.setId(String.valueOf(i));
-//            audio.setTitle(artists + " - " + songName);
-//            audio.setCaption(item.getExternal_urls().getSpotify());
-//            audio.setAudioUrl(item.getPreview_url());
-//            results.add(audio);
 
             InlineQueryResultArticle article = new InlineQueryResultArticle();
             article.setInputMessageContent(messageContent);
