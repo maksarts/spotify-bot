@@ -14,4 +14,5 @@ public class Item implements Serializable {
     private ExternalUrl external_urls;
     private ArrayList<Artist> artists;
     private Album album;
+    private String preview_url;
 }

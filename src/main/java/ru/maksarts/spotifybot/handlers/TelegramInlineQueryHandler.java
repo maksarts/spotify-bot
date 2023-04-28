@@ -9,6 +9,8 @@ import org.telegram.telegrambots.meta.api.objects.inlinequery.InlineQuery;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessagecontent.InputTextMessageContent;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultAudio;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultDocument;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.maksarts.spotifybot.dto.types.*;
 import ru.maksarts.spotifybot.services.SpotifyService;
@@ -50,6 +52,13 @@ public class TelegramInlineQueryHandler {
 
             InputTextMessageContent messageContent = new InputTextMessageContent();
             messageContent.setMessageText(spotifyUrl);
+
+//            InlineQueryResultAudio audio = new InlineQueryResultAudio();
+//            audio.setId(String.valueOf(i));
+//            audio.setTitle(artists + " - " + songName);
+//            audio.setCaption(item.getExternal_urls().getSpotify());
+//            audio.setAudioUrl(item.getPreview_url());
+//            results.add(audio);
 
             InlineQueryResultArticle article = new InlineQueryResultArticle();
             article.setInputMessageContent(messageContent);

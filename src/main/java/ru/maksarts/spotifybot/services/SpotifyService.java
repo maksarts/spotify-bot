@@ -82,7 +82,7 @@ public class SpotifyService {
                                                                             TokenResponse.class);
 
         log.info("auth response status code = {}", response.getStatusCode());
-        if (response.getBody() != null) log.info(response.getBody().toString());
+        //if (response.getBody() != null) log.info(response.getBody().toString());
 
         if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null){
             return response.getBody().getAccess_token();
@@ -109,7 +109,9 @@ public class SpotifyService {
                                                                             request,
                                                                             TracksSearchResponse.class);
 
-        log.info("response status code = {}", response.getStatusCode());
+        if(!response.getStatusCode().is2xxSuccessful()) {
+            log.warn("response status code={}", response.getStatusCode());
+        }
         return response;
     }
 }
