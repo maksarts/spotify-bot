@@ -7,6 +7,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 import ru.maksarts.spotifybot.dto.TokenResponse;
@@ -23,7 +24,7 @@ public class SpotifyService {
     public static final String AUTH_URL = "https://accounts.spotify.com/api/token";
 
     private static final String CLIENT_ID = "4551cb9f03f2457983c2e4f2ccf78610";
-    private static final String CLIENT_SECRET = "1ab3ced6ed584e35a65c521dc9b85853"; //TODO переложить в конфиг
+    private static final String CLIENT_SECRET = "<secret>"; //TODO переложить в конфиг
 
     private static final String TRACK_TYPE = "track";
 
@@ -37,35 +38,41 @@ public class SpotifyService {
     }
     public Track getTracks(String q, String type){
         if (this.token == null) token = sendAuth();
-        ResponseEntity<TracksSearchResponse> response = sendSearchRequest(q, type, token);
+        ResponseEntity<TracksSearchResponse> response;
 
-        if (response.getStatusCode().is2xxSuccessful()){
-            if (response.getBody() != null) {
-                //log.info("response={}", response.getBody().toString());
-                return response.getBody().getTracks();
-            }
-            else{
-                log.warn("status_code = {}, response body = null", response.getStatusCode());
-                return null;
-            }
-        }
-
-        if (response.getStatusCode().value() == 403){
-            log.info("Re-auth...");
-            token = sendAuth();
+        try {
             response = sendSearchRequest(q, type, token);
-            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null){
-                return response.getBody().getTracks();
-            }
-            else{
-                if (response.getBody() == null){
-                    throw new RuntimeException("Search failed: response body=null");
+
+            if (response.getStatusCode().is2xxSuccessful()){
+                if (response.getBody() != null) {
+                    //log.info("response={}", response.getBody().toString());
+                    return response.getBody().getTracks();
                 }
-                throw new RuntimeException("Search failed: " + response.getStatusCode());
+                else{
+                    log.error("status_code = {}, response body = null", response.getStatusCode());
+                    return null;
+                }
+            }
+
+        } catch (HttpStatusCodeException ex) {
+            if (ex.getStatusCode().value() == 403){
+                log.info("Re-auth...");
+                token = sendAuth();
+
+                try {
+                    response = sendSearchRequest(q, type, token);
+
+                    if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                        return response.getBody().getTracks();
+                    }
+
+                } catch (HttpStatusCodeException ex2) {
+                    throw new RuntimeException("Search failed: " + ex2.getMessage(), ex2);
+                }
             }
         }
 
-        throw new RuntimeException("Search failed: " + response.getStatusCode());
+        throw new RuntimeException("Search failed");
     }
 
     private String sendAuth(){
@@ -77,18 +84,27 @@ public class SpotifyService {
         map.add("grant_type", "client_credentials");
 
         HttpEntity<MultiValueMap<String, String>> request = new HttpEntity<>(map, headers);
-        ResponseEntity<TokenResponse> response = restTemplate.postForEntity(AUTH_URL,
-                                                                            request,
-                                                                            TokenResponse.class);
 
-        log.info("auth response status code = {}", response.getStatusCode());
-        //if (response.getBody() != null) log.info(response.getBody().toString());
+        try {
+            ResponseEntity<TokenResponse> response = restTemplate.postForEntity(AUTH_URL,
+                                                                                request,
+                                                                                TokenResponse.class);
 
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null){
-            return response.getBody().getAccess_token();
-        }
-        else {
-            throw new RuntimeException("Failed to get token");
+            log.info("auth response status code = {}", response.getStatusCode());
+            //if (response.getBody() != null) log.info(response.getBody().toString());
+
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null){
+                return response.getBody().getAccess_token();
+            }
+            else if (response.getBody() != null && response.getBody().getError() != null) {
+                throw new RuntimeException("Failed to get token: " + response.getStatusCode() + ": " + response.getBody());
+            }
+            else {
+                throw new RuntimeException("Failed to get token");
+            }
+
+        } catch (HttpStatusCodeException ex) {
+            throw new RuntimeException("Failed to get token: " + ex.getMessage(), ex);
         }
     }
 
@@ -109,7 +125,7 @@ public class SpotifyService {
                                                                             request,
                                                                             TracksSearchResponse.class);
 
-        if(!response.getStatusCode().is2xxSuccessful()) {
+        if (!response.getStatusCode().is2xxSuccessful()) {
             log.warn("response status code={}", response.getStatusCode());
         }
         return response;

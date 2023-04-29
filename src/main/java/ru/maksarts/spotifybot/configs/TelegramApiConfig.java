@@ -23,14 +23,19 @@ public class TelegramApiConfig {
     @Bean
     public TelegramBotsApi telegramBotsApi(){
         try {
+
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
-            BotConfig bot = new BotConfig(inlineQueryHandler);
-            telegramBotsApi.registerBot(bot);
+
+            BotLoggerConfig botLogger = new BotLoggerConfig();
+
+            telegramBotsApi.registerBot(botLogger);
+            telegramBotsApi.registerBot(new BotConfig(inlineQueryHandler, botLogger));
+
             return telegramBotsApi;
+
         } catch (TelegramApiException e) {
-            log.error("Cannot create TelegramBotsApi: {}", e.getMessage(), e);
+            log.error("Cannot create telegramBotsApi: {}", e.getMessage(), e);
             return null;
         }
     }
-
 }
