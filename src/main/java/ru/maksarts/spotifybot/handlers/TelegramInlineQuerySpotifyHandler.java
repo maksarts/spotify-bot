@@ -40,16 +40,16 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
                     query = query.replaceAll("(/file )", "");
                     Track tracks = spotifyService.getTracks(query);
                     List<InlineQueryResult> results = makeSongsResults(tracks);
-                    return converteResultsToResponse(inlineQuery, results);
+                    return convertResultsToResponse(inlineQuery, results);
                 }
 
             } else {
                 Track tracks = spotifyService.getTracks(query);
                 List<InlineQueryResult> results = makeResults(tracks);
-                return converteResultsToResponse(inlineQuery, results);
+                return convertResultsToResponse(inlineQuery, results);
             }
         }
-        return converteResultsToResponse(inlineQuery, new ArrayList<>());
+        return convertResultsToResponse(inlineQuery, new ArrayList<>());
     }
 
     private static List<InlineQueryResult> makeSongsResults(Track tracks){
@@ -127,11 +127,13 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
         return result;
     }
 
-    private static AnswerInlineQuery converteResultsToResponse(InlineQuery inlineQuery, List<InlineQueryResult> results) {
+    private static AnswerInlineQuery convertResultsToResponse(InlineQuery inlineQuery, List<InlineQueryResult> results) {
         AnswerInlineQuery answerInlineQuery = new AnswerInlineQuery();
         answerInlineQuery.setInlineQueryId(inlineQuery.getId());
         answerInlineQuery.setCacheTime(100);
         answerInlineQuery.setResults(results);
+//        answerInlineQuery.setSwitchPmText("To the chat");
+//        answerInlineQuery.setSwitchPmParameter("pmParameter");
         return answerInlineQuery;
     }
 }
