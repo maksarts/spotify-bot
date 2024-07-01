@@ -27,9 +27,10 @@ public class TelegramApiConfig {
             TelegramBotsApi telegramBotsApi = new TelegramBotsApi(DefaultBotSession.class);
 
             BotLoggerConfig botLogger = new BotLoggerConfig();
+            BotConfig botConfig = new BotConfig(inlineQueryHandler, botLogger);
 
             telegramBotsApi.registerBot(botLogger);
-            telegramBotsApi.registerBot(new BotConfig(inlineQueryHandler, botLogger));
+            telegramBotsApi.registerBot(botConfig);
 
             return telegramBotsApi;
 

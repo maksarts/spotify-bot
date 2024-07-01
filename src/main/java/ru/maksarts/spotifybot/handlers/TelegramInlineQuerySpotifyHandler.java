@@ -9,10 +9,15 @@ import org.telegram.telegrambots.meta.api.objects.inlinequery.inputmessageconten
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultAudio;
+import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultDocument;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.maksarts.spotifybot.dto.types.*;
 import ru.maksarts.spotifybot.services.SpotifyService;
 import ru.maksarts.spotifybot.services.YoutubeService;
 
+import javax.script.ScriptException;
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -39,13 +44,24 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
                 if (matcher.find()) {
                     query = query.replaceAll("(/file )", "");
                     Track tracks = spotifyService.getTracks(query);
-                    List<InlineQueryResult> results = makeSongsResults(tracks);
+                    List<InlineQueryResult> results = makeRealSongsResults(tracks);
                     return convertResultsToResponse(inlineQuery, results);
                 }
 
             } else {
                 Track tracks = spotifyService.getTracks(query);
                 List<InlineQueryResult> results = makeResults(tracks);
+
+                //TODO тест кнопочек
+//                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+//                List<List<InlineKeyboardButton>> rows = new ArrayList<>();
+//                List<InlineKeyboardButton> row = new ArrayList<>();
+//                InlineKeyboardButton button = new InlineKeyboardButton();
+//                button.setText("кнопочка");
+//                row.add(button);
+//                rows.add(row);
+//                inlineKeyboardMarkup.setKeyboard(rows);
+
                 return convertResultsToResponse(inlineQuery, results);
             }
         }
@@ -74,6 +90,39 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
             results.add(audio);
             i++;
             //log.info("Added to result: {} - {}", artists, songName);
+        }
+        return results;
+    }
+
+    private List<InlineQueryResult> makeRealSongsResults(Track tracks) {
+        List<InlineQueryResult> results = new ArrayList<>();
+        ArrayList<Item> items = tracks.getItems();
+        int i = 0;
+
+        // TODO сделать асинхронно поиск урлов
+        while (i < 2 && i < items.size()) {
+            Item item = items.get(i);
+            String artists = makeArtists(item.getArtists());
+            String songName = item.getName();
+            String spotifyUrl = item.getExternal_urls().getSpotify();
+
+            InputTextMessageContent messageContent = new InputTextMessageContent();
+            messageContent.setMessageText(spotifyUrl);
+
+            InlineQueryResultAudio audio = new InlineQueryResultAudio();
+            audio.setId(String.valueOf(i));
+            audio.setTitle(songName);
+            audio.setPerformer(artists);
+            audio.setCaption(item.getExternal_urls().getSpotify());
+
+            //TODO не дает mp3, дает m4a
+            String mainArtist = item.getArtists().get(0).getName();
+            String videoUrl = youtubeService.getVideoUrl(mainArtist, songName);
+            String audioUrl = youtubeService.getAudioUrl(videoUrl);
+            audio.setAudioUrl(audioUrl);
+
+            results.add(audio);
+            i++;
         }
         return results;
     }
@@ -122,6 +171,7 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
             Integer height = cover.getHeight();
             if (height > maxHeight) {
                 result = cover.getUrl();
+                maxHeight = height;
             }
         }
         return result;

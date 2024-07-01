@@ -23,7 +23,7 @@ public class SpotifyService {
     public static final String BASE_URL = "https://api.spotify.com/v1/";
     public static final String AUTH_URL = "https://accounts.spotify.com/api/token";
 
-    private static final String CLIENT_ID = "4551cb9f03f2457983c2e4f2ccf78610";
+    private static final String CLIENT_ID = "<id>";
     private static final String CLIENT_SECRET = "<secret>"; //TODO переложить в конфиг
 
     private static final String TRACK_TYPE = "track";
@@ -56,6 +56,7 @@ public class SpotifyService {
 
         } catch (HttpStatusCodeException ex) {
             if (ex.getStatusCode().value() == 403){
+
                 log.info("Re-auth...");
                 token = sendAuth();
 

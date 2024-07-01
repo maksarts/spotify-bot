@@ -57,7 +57,28 @@ public class YoutubeService {
         return true;
     }
 
-    public String getVideoUrl(String artist, String song) throws FileNotFoundException, ScriptException {
+    public String getAudioUrl(String videoUrl){
+        String audioUrl = null;
+
+        try {
+            ProcessBuilder processBuilder = new ProcessBuilder("youtube-dl",
+                                                                        "-f", "bestaudio",
+                                                                        // "--audio-format", "mp3",
+                                                                        "--get-url", videoUrl);
+            processBuilder.redirectErrorStream(true);
+
+            Process process = processBuilder.start();
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            audioUrl = bufferedReader.readLine();
+
+        } catch (Exception ex){
+            ex.printStackTrace();
+        }
+
+        return audioUrl;
+    }
+
+    public String getVideoUrl(String artist, String song) {
         String searchUrl = (YT_SEARCH_URL + artist + "-Topic" + "+" + song).replaceAll(" ", "+");
 
         log.info("searchUrl = {}", searchUrl);
@@ -68,7 +89,7 @@ public class YoutubeService {
                                                                 request,
                                                                 String.class);
 
-//        log.info("response = {}", response.getBody());
+        //log.info("response = {}", response.getBody());
 
         if(response.getBody() != null){
             Matcher matcher = patternVideoUrl.matcher(response.getBody());

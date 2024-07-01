@@ -16,7 +16,7 @@ public class BotLoggerConfig extends TelegramLongPollingBot {
     private static final String USERNAME = "SpotifyShareSongsLoggerBot";
     private static final String TOKEN = "<token>"; //TODO в проперти
 
-    private static final String CHAT_ID = "399101922";
+    private static final String CHAT_ID = "399101922"; //TODO в проперти
 
     @Override
     public void onUpdateReceived(Update update) {
