@@ -14,6 +14,7 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMa
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import ru.maksarts.spotifybot.dto.types.*;
 import ru.maksarts.spotifybot.services.SpotifyService;
+import ru.maksarts.spotifybot.services.VkService;
 import ru.maksarts.spotifybot.services.YoutubeService;
 
 import javax.script.ScriptException;
@@ -30,7 +31,7 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
     @Autowired
     private SpotifyService spotifyService;
     @Autowired
-    private YoutubeService youtubeService;
+    private VkService vkService;
 
     private static final Pattern patternFile = Pattern.compile("(/file)");
 
@@ -99,8 +100,7 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
         ArrayList<Item> items = tracks.getItems();
         int i = 0;
 
-        // TODO сделать асинхронно поиск урлов
-        while (i < 2 && i < items.size()) {
+        while (i < 1 && i < items.size()) {
             Item item = items.get(i);
             String artists = makeArtists(item.getArtists());
             String songName = item.getName();
@@ -115,10 +115,9 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
             audio.setPerformer(artists);
             audio.setCaption(item.getExternal_urls().getSpotify());
 
-            //TODO не дает mp3, дает m4a
+            //TODO сделать один вызов скриптов для поиска нескольких ссылок, внутри него - асинхронно
             String mainArtist = item.getArtists().get(0).getName();
-            String videoUrl = youtubeService.getVideoUrl(mainArtist, songName);
-            String audioUrl = youtubeService.getAudioUrl(videoUrl);
+            String audioUrl = vkService.getAudioUrl(mainArtist, songName);
             audio.setAudioUrl(audioUrl);
 
             results.add(audio);

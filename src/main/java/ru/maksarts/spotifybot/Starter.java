@@ -12,6 +12,7 @@ import org.springframework.web.util.UriComponentsBuilder;
 import ru.maksarts.spotifybot.configs.RestTemplateConfig;
 import ru.maksarts.spotifybot.dto.TracksSearchResponse;
 import ru.maksarts.spotifybot.services.SpotifyService;
+import ru.maksarts.spotifybot.services.VkService;
 import ru.maksarts.spotifybot.services.YoutubeService;
 
 import java.net.URLEncoder;
@@ -29,6 +30,8 @@ public class Starter implements CommandLineRunner {
     YoutubeService youtubeUtils;
     @Autowired
     RestTemplate restTemplate;
+    @Autowired
+    VkService vkService;
 
     @Override
     public void run(String... args) throws Exception {
@@ -42,5 +45,8 @@ public class Starter implements CommandLineRunner {
 
 //        youtubeUtils.downloadMp3("Judas priest", "painkiller");
 //        log.info("audioUrl={}", youtubeUtils.getAudioUrl(youtubeUtils.getVideoUrl("Гражданская оборона", "Солнцеворот")));
+
+//        String url = vkService.getAudioUrl("Гражданская оборона", "Винтовка");
+//        log.info("audioUrl={}", url);
     }
 }
