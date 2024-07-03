@@ -23,8 +23,8 @@ public class SpotifyService {
     public static final String BASE_URL = "https://api.spotify.com/v1/";
     public static final String AUTH_URL = "https://accounts.spotify.com/api/token";
 
-    private static final String CLIENT_ID = "<id>";
-    private static final String CLIENT_SECRET = "<secret>"; //TODO переложить в конфиг
+    private static final String CLIENT_ID = "4551cb9f03f2457983c2e4f2ccf78610";
+    private static final String CLIENT_SECRET = "secret"; //TODO переложить в конфиг
 
     private static final String TRACK_TYPE = "track";
 
@@ -32,7 +32,13 @@ public class SpotifyService {
     private RestTemplate restTemplate;
 
     private String token;
+    private TokenResponse tokenResponse;
 
+    //TODO поставить обновление токена по таймеру?
+    public void auth(){
+        log.info("Re-auth...");
+        this.token = sendAuth();
+    }
     public Track getTracks(String q){
         return getTracks(q, TRACK_TYPE);
     }
@@ -71,9 +77,10 @@ public class SpotifyService {
                     throw new RuntimeException("Search failed: " + ex2.getMessage(), ex2);
                 }
             }
+        } catch (Exception undefined){
+            throw new RuntimeException("Search failed", undefined);
         }
-
-        throw new RuntimeException("Search failed");
+        return null;
     }
 
     private String sendAuth(){

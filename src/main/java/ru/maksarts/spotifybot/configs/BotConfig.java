@@ -5,18 +5,23 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
+import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
 import ru.maksarts.spotifybot.handlers.TelegramInlineQueryHandler;
+import ru.maksarts.spotifybot.services.VkService;
+
+import java.io.IOException;
+import java.util.ArrayList;
 
 @Slf4j
 public class BotConfig extends TelegramLongPollingBot {
 
     private static final String USERNAME = "SpotifyShareSongsBot";
-    private static final String TOKEN = "<token>"; //TODO в проперти
+    private static final String TOKEN = "token"; //TODO в проперти
 
     private final TelegramInlineQueryHandler inlineQueryHandler;
     private final BotLoggerConfig botLogger;
@@ -27,29 +32,85 @@ public class BotConfig extends TelegramLongPollingBot {
     }
 
 
-    private AnswerInlineQuery lastAnswer = null; // TODO убрать наверное
+    private static final String bot_password = "password"; //TODO через хеш
+    private boolean vkReAuthCommand = false;
 
     @Override
     public void onUpdateReceived(Update update) {
-//        try {
-//            log.info("webHook={}", getWebhookInfo().toString());
-//            clearWebhook();
-//        } catch (Exception ex) {
-//            log.error("Exception while clearWebhook(): {}", ex.getMessage(), ex);
-//        }
+
+        //TODO кнопка реаутентификации в спотифайчике
+
         if(update != null && update.hasMessage()) {
             log.info("message recieved={}, message={}", update.getMessage().getText(), update.getMessage().toString());
+
+            if(update.getMessage().isCommand()){
+                if(update.getMessage().getText().equals("/vkauth")){
+                    log.warn("Vk re-auth request from user=@{}", update.getMessage().getFrom().getUserName());
+                    SendMessage sm = SendMessage.builder()
+                                                .chatId(update.getMessage().getChatId())
+                                                .text("Please enter bot password")
+                                                .build();
+                    try {
+                        execute(sm);
+                    } catch (TelegramApiException e) {
+                        log.error("TelegramApiException when sending message: {}", e.getMessage(), e);
+                    }
+                    vkReAuthCommand = true;
+                }
+            }
+
+            else if(!update.getMessage().getText().isBlank() && vkReAuthCommand){
+                vkReAuthCommand = false;
+                String botPass = update.getMessage().getText().trim();
+                if(botPass.equals(bot_password)){
+
+                    try {
+
+                        inlineQueryHandler.vkReAuth();
+                        SendMessage sm = SendMessage.builder()
+                                .chatId(update.getMessage().getChatId())
+                                .text("Successfully authenticated in VK")
+                                .build();
+                        try {
+                            execute(sm);
+                        } catch (TelegramApiException e) {
+                            log.error("TelegramApiException when seding message: {}", e.getMessage(), e);
+                        }
+
+                    } catch (IOException ex) {
+                        log.error("Exception while manual re-auth in VK: {}", ex.getMessage(), ex);
+                        SendMessage sm = SendMessage.builder()
+                                .chatId(update.getMessage().getChatId())
+                                .text("Something went wrong:\n```" + ex.getMessage() + "```")
+                                .build();
+                        try {
+                            execute(sm);
+                        } catch (TelegramApiException e) {
+                            log.error("TelegramApiException when seding message: {}", e.getMessage(), e);
+                        }
+                    }
+
+                } else{
+                    SendMessage sm = SendMessage.builder()
+                            .chatId(update.getMessage().getChatId())
+                            .text("Bruh, invalid bot password, go away man")
+                            .build();
+                    try {
+                        execute(sm);
+                    } catch (TelegramApiException e) {
+                        log.error("TelegramApiException when seding message: {}", e.getMessage(), e);
+                    }
+                }
+            }
         }
 
         if(update != null && update.hasInlineQuery()){
             if (!update.getInlineQuery().getQuery().isBlank()) {
                 log.info("inlineMessage={}, query={}", update.getInlineQuery().getQuery(), update.getInlineQuery().toString());
                 botLogger.send("inline message=" + update.getInlineQuery().getQuery() + ", from=@" + update.getInlineQuery().getFrom().getUserName());
-
                 try {
-                    lastAnswer = inlineQueryHandler.handle(update.getInlineQuery());
-                    // lastAnswer.setCacheTime(0);
-                    execute(lastAnswer);
+                    AnswerInlineQuery answer = inlineQueryHandler.handle(update.getInlineQuery());
+                    execute(answer);
                 } catch (Exception ex) {
                     log.error("Exception while handling inline query: {}", ex.getMessage(), ex);
                     botLogger.sendCode("Exception while handling inline query: " + ex.getMessage());
@@ -57,22 +118,10 @@ public class BotConfig extends TelegramLongPollingBot {
             }
         }
 
-        //TODO inline keyboard attache to the message
+        //inline keyboard attached to the message?
         if (update != null && update.hasCallbackQuery()) log.info("getCallbackQuery={}", update.getCallbackQuery());
         if (update != null && update.hasChosenInlineQuery()){
-            log.info("getChosenInlineQuery={}", update.getChosenInlineQuery());
-
-            if (lastAnswer != null) {
-                InlineQueryResultArticle chosen = (InlineQueryResultArticle) lastAnswer.getResults().get(Integer.parseInt(update.getChosenInlineQuery().getResultId()));
-                String songName = chosen.getTitle();
-                String artist = chosen.getDescription();
-                log.info("client has chosen: songName={}, artist={}", songName, artist);
-
-//                log.info(lastAnswer.toString());
-
-                lastAnswer = null;
-            }
-
+//            log.info("getChosenInlineQuery={}", update.getChosenInlineQuery());
         }
     }
 

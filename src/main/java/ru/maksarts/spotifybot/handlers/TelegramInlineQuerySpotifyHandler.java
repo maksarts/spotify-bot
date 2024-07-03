@@ -19,6 +19,7 @@ import ru.maksarts.spotifybot.services.YoutubeService;
 
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -34,6 +35,10 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
     private VkService vkService;
 
     private static final Pattern patternFile = Pattern.compile("(/file)");
+
+    public void vkReAuth() throws IOException {
+        vkService.vkAuth();
+    }
 
     @Override
     public AnswerInlineQuery handle(InlineQuery inlineQuery){
@@ -51,19 +56,16 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
 
             } else {
                 Track tracks = spotifyService.getTracks(query);
-                List<InlineQueryResult> results = makeResults(tracks);
-
-                //TODO тест кнопочек
-//                InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
-//                List<List<InlineKeyboardButton>> rows = new ArrayList<>();
-//                List<InlineKeyboardButton> row = new ArrayList<>();
-//                InlineKeyboardButton button = new InlineKeyboardButton();
-//                button.setText("кнопочка");
-//                row.add(button);
-//                rows.add(row);
-//                inlineKeyboardMarkup.setKeyboard(rows);
-
-                return convertResultsToResponse(inlineQuery, results);
+                try {
+                    List<InlineQueryResult> results = makeResults(tracks);
+                    return convertResultsToResponse(inlineQuery, results);
+                } catch (NullPointerException ex){
+                    log.warn("NullPointerException while making search results. Maybe need update spotify token", ex);
+                    spotifyService.auth();
+                    tracks = spotifyService.getTracks(query);
+                    List<InlineQueryResult> results = makeResults(tracks);
+                    return convertResultsToResponse(inlineQuery, results);
+                }
             }
         }
         return convertResultsToResponse(inlineQuery, new ArrayList<>());
@@ -90,7 +92,6 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
             audio.setAudioUrl(item.getPreview_url());
             results.add(audio);
             i++;
-            //log.info("Added to result: {} - {}", artists, songName);
         }
         return results;
     }
@@ -114,11 +115,14 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
             audio.setTitle(songName);
             audio.setPerformer(artists);
             audio.setCaption(item.getExternal_urls().getSpotify());
+//            audio.setReplyMarkup(); TODO попробовать подкачивать песню сюда
 
             //TODO сделать один вызов скриптов для поиска нескольких ссылок, внутри него - асинхронно
             String mainArtist = item.getArtists().get(0).getName();
             String audioUrl = vkService.getAudioUrl(mainArtist, songName);
-            audio.setAudioUrl(audioUrl);
+            if(audioUrl != null) {
+                audio.setAudioUrl(audioUrl);
+            }
 
             results.add(audio);
             i++;

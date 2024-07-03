@@ -48,5 +48,7 @@ public class Starter implements CommandLineRunner {
 
 //        String url = vkService.getAudioUrl("Гражданская оборона", "Винтовка");
 //        log.info("audioUrl={}", url);
+//        url = vkService.getAudioUrl("Гражданская оборона", "Солнцеворот");
+//        log.info("audioUrl={}", url);
     }
 }
