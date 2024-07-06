@@ -4,8 +4,11 @@ package ru.maksarts.spotifybot.configs;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
+import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageMedia;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResult;
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
@@ -32,13 +35,13 @@ public class BotConfig extends TelegramLongPollingBot {
     }
 
 
-    private static final String bot_password = "password"; //TODO через хеш
+    private static final int bot_password = 1616890400; //TODO хранить в бд
     private boolean vkReAuthCommand = false;
 
     @Override
     public void onUpdateReceived(Update update) {
 
-        //TODO кнопка реаутентификации в спотифайчике
+        //TODO кнопка реаутентификации в спотифайчике?
 
         if(update != null && update.hasMessage()) {
             log.info("message recieved={}, message={}", update.getMessage().getText(), update.getMessage().toString());
@@ -62,7 +65,7 @@ public class BotConfig extends TelegramLongPollingBot {
             else if(!update.getMessage().getText().isBlank() && vkReAuthCommand){
                 vkReAuthCommand = false;
                 String botPass = update.getMessage().getText().trim();
-                if(botPass.equals(bot_password)){
+                if(botPass.hashCode() == bot_password){
 
                     try {
 
@@ -71,10 +74,11 @@ public class BotConfig extends TelegramLongPollingBot {
                                 .chatId(update.getMessage().getChatId())
                                 .text("Successfully authenticated in VK")
                                 .build();
+                        botLogger.send(String.format("User @%s evoked VK re-auth successfully", update.getMessage().getFrom().getUserName()));
                         try {
                             execute(sm);
                         } catch (TelegramApiException e) {
-                            log.error("TelegramApiException when seding message: {}", e.getMessage(), e);
+                            log.error("TelegramApiException when sending message: {}", e.getMessage(), e);
                         }
 
                     } catch (IOException ex) {
@@ -86,7 +90,7 @@ public class BotConfig extends TelegramLongPollingBot {
                         try {
                             execute(sm);
                         } catch (TelegramApiException e) {
-                            log.error("TelegramApiException when seding message: {}", e.getMessage(), e);
+                            log.error("TelegramApiException when sending message: {}", e.getMessage(), e);
                         }
                     }
 
@@ -98,7 +102,7 @@ public class BotConfig extends TelegramLongPollingBot {
                     try {
                         execute(sm);
                     } catch (TelegramApiException e) {
-                        log.error("TelegramApiException when seding message: {}", e.getMessage(), e);
+                        log.error("TelegramApiException when sending message: {}", e.getMessage(), e);
                     }
                 }
             }
@@ -118,8 +122,22 @@ public class BotConfig extends TelegramLongPollingBot {
             }
         }
 
-        //inline keyboard attached to the message?
-        if (update != null && update.hasCallbackQuery()) log.info("getCallbackQuery={}", update.getCallbackQuery());
+        if (update != null && update.hasCallbackQuery()) {
+            log.info("getCallbackQuery={}", update.getCallbackQuery());
+//            String inlineMessageId =  update.getCallbackQuery().getInlineMessageId();
+//            String chatId =  update.getCallbackQuery().getChatInstance();
+//            String data = update.getCallbackQuery().getData();
+//
+//            AnswerCallbackQuery close = AnswerCallbackQuery.builder()
+//                    .callbackQueryId(update.getCallbackQuery().getId()).build();
+//
+//            try {
+//                execute(close);
+//            } catch (Exception ex) {
+//                log.error("Exception while handling inline query: {}", ex.getMessage(), ex);
+//                botLogger.sendCode("Exception while handling inline query: " + ex.getMessage());
+//            }
+        }
         if (update != null && update.hasChosenInlineQuery()){
 //            log.info("getChosenInlineQuery={}", update.getChosenInlineQuery());
         }

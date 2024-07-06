@@ -15,6 +15,7 @@ import ru.maksarts.spotifybot.dto.TracksSearchResponse;
 import ru.maksarts.spotifybot.dto.types.Track;
 
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
 
 @Slf4j
 @Service
@@ -31,23 +32,20 @@ public class SpotifyService {
     @Autowired
     private RestTemplate restTemplate;
 
-    private String token;
     private TokenResponse tokenResponse;
 
-    //TODO поставить обновление токена по таймеру?
-    public void auth(){
-        log.info("Re-auth...");
-        this.token = sendAuth();
-    }
     public Track getTracks(String q){
         return getTracks(q, TRACK_TYPE);
     }
     public Track getTracks(String q, String type){
-        if (this.token == null) token = sendAuth();
+        if (this.tokenResponse == null ||
+            this.tokenResponse.getExpireTime().isBefore(LocalDateTime.now())) {
+            tokenResponse = sendAuth();
+        }
         ResponseEntity<TracksSearchResponse> response;
 
         try {
-            response = sendSearchRequest(q, type, token);
+            response = sendSearchRequest(q, type, tokenResponse.getAccess_token());
 
             if (response.getStatusCode().is2xxSuccessful()){
                 if (response.getBody() != null) {
@@ -64,10 +62,10 @@ public class SpotifyService {
             if (ex.getStatusCode().value() == 403){
 
                 log.info("Re-auth...");
-                token = sendAuth();
+                tokenResponse = sendAuth();
 
                 try {
-                    response = sendSearchRequest(q, type, token);
+                    response = sendSearchRequest(q, type, tokenResponse.getAccess_token());
 
                     if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
                         return response.getBody().getTracks();
@@ -83,7 +81,7 @@ public class SpotifyService {
         return null;
     }
 
-    private String sendAuth(){
+    private TokenResponse sendAuth(){
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
         headers.setBasicAuth(CLIENT_ID, CLIENT_SECRET, StandardCharsets.UTF_8);
@@ -102,7 +100,8 @@ public class SpotifyService {
             //if (response.getBody() != null) log.info(response.getBody().toString());
 
             if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null){
-                return response.getBody().getAccess_token();
+                response.getBody().setExpireTime(LocalDateTime.now().plusSeconds(response.getBody().getExpires_in()));
+                return response.getBody();
             }
             else if (response.getBody() != null && response.getBody().getError() != null) {
                 throw new RuntimeException("Failed to get token: " + response.getStatusCode() + ": " + response.getBody());

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDateTime;
 
 @Data
 public class TokenResponse implements Serializable {
@@ -14,4 +15,5 @@ public class TokenResponse implements Serializable {
     private Integer expires_in;
     private String error;
     private String error_description;
+    private LocalDateTime expireTime;
 }

@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Controller
@@ -34,7 +35,7 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
     @Autowired
     private VkService vkService;
 
-    private static final Pattern patternFile = Pattern.compile("(/file)");
+    private static final Pattern patternFile = Pattern.compile("(/link)");
 
     public void vkReAuth() throws IOException {
         vkService.vkAuth();
@@ -48,24 +49,16 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
 
                 Matcher matcher = patternFile.matcher(query);
                 if (matcher.find()) {
-                    query = query.replaceAll("(/file )", "");
+                    query = query.replaceAll("(/link )", "");
                     Track tracks = spotifyService.getTracks(query);
-                    List<InlineQueryResult> results = makeRealSongsResults(tracks);
+                    List<InlineQueryResult> results = makeResults(tracks);
                     return convertResultsToResponse(inlineQuery, results);
                 }
 
             } else {
                 Track tracks = spotifyService.getTracks(query);
-                try {
-                    List<InlineQueryResult> results = makeResults(tracks);
-                    return convertResultsToResponse(inlineQuery, results);
-                } catch (NullPointerException ex){
-                    log.warn("NullPointerException while making search results. Maybe need update spotify token", ex);
-                    spotifyService.auth();
-                    tracks = spotifyService.getTracks(query);
-                    List<InlineQueryResult> results = makeResults(tracks);
-                    return convertResultsToResponse(inlineQuery, results);
-                }
+                List<InlineQueryResult> results = makeRealSongsResults(tracks);
+                return convertResultsToResponse(inlineQuery, results);
             }
         }
         return convertResultsToResponse(inlineQuery, new ArrayList<>());
@@ -99,9 +92,9 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
     private List<InlineQueryResult> makeRealSongsResults(Track tracks) {
         List<InlineQueryResult> results = new ArrayList<>();
         ArrayList<Item> items = tracks.getItems();
-        int i = 0;
 
-        while (i < 1 && i < items.size()) {
+        int i = 0;
+        while (i < 3 && i < items.size()) {
             Item item = items.get(i);
             String artists = makeArtists(item.getArtists());
             String songName = item.getName();
@@ -114,19 +107,31 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
             audio.setId(String.valueOf(i));
             audio.setTitle(songName);
             audio.setPerformer(artists);
-            audio.setCaption(item.getExternal_urls().getSpotify());
-//            audio.setReplyMarkup(); TODO попробовать подкачивать песню сюда
 
-            //TODO сделать один вызов скриптов для поиска нескольких ссылок, внутри него - асинхронно
-            String mainArtist = item.getArtists().get(0).getName();
-            String audioUrl = vkService.getAudioUrl(mainArtist, songName);
-            if(audioUrl != null) {
-                audio.setAudioUrl(audioUrl);
-            }
+            InlineKeyboardButton urlButton = InlineKeyboardButton.builder()
+                    .text("Open in Spotify")
+                    .url(item.getExternal_urls().getSpotify())
+                    .build();
+
+            InlineKeyboardMarkup keyboard = InlineKeyboardMarkup.builder()
+                    .keyboardRow(List.of(urlButton))
+                    .build();
+
+            audio.setReplyMarkup(keyboard);
 
             results.add(audio);
             i++;
         }
+
+        results = results.parallelStream().peek(result -> {
+            String artists = ((InlineQueryResultAudio) result).getPerformer();
+            String songName = ((InlineQueryResultAudio) result).getTitle();
+            String audioUrl = vkService.getAudioUrl(artists, songName);
+            if(audioUrl != null) {
+                ((InlineQueryResultAudio) result).setAudioUrl(audioUrl);
+            }
+        }).filter(result -> ((InlineQueryResultAudio) result).getAudioUrl() != null).collect(Collectors.toList());
+
         return results;
     }
 

@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 public class VkService {
 
     //TODO добавить автоматическую(?) переаутентификацию в вк
-    //TODO хранить в бд?
     public VkService() throws IOException {
         vkAuth();
     }
@@ -33,7 +32,9 @@ public class VkService {
         log.info("Authentication in VK");
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("python",
-                                                                        "pyscripts/vk_audio_auth.py");
+                                                                        "pyscripts/vk_audio_auth.py",
+                                                                        "--login", "login",
+                                                                        "--password", "password"); //TODO в проперти
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -93,10 +94,10 @@ public class VkService {
                 line = bufferedReader.readLine();
             }
             if(url != null) {
-                log.info("Audio url found successfully: url={}", url);
+                //log.info("Audio url found successfully: url={}", url);
             }
             else{
-                log.warn("Audio url is null");
+                log.warn("Audio url is null, query={} - {}", artist, songName);
             }
         } catch (Exception ex){
             ex.printStackTrace();

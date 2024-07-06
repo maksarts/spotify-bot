@@ -18,7 +18,9 @@ print(f"[{script_name}]: Start search in VK library with query={query}")
 
 service = Service(token=token, user_agent=user_agent)
 songs = service.search_songs_by_text(query, 1)
-url = songs[0].url
-print(url)
-
-print(f"[{script_name}]: Finish search in VK library")
+if songs:
+    url = songs[0].url
+    print(url)
+    print(f"[{script_name}]: Finish search in VK library")
+else:
+    print(f"[{script_name}]: Cannot find url by query={query}")
