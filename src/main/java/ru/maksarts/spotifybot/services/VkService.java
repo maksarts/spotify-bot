@@ -33,7 +33,7 @@ public class VkService {
         try {
             ProcessBuilder processBuilder = new ProcessBuilder("python",
                                                                         "pyscripts/vk_audio_auth.py",
-                                                                        "--login", "login",
+                                                                        "--login", "kaktusko2000@gmail.com",
                                                                         "--password", "password"); //TODO в проперти
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();

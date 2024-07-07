@@ -1,6 +1,8 @@
 package ru.maksarts.spotifybot.handlers;
 
+import javassist.LoaderClassPath;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.tomcat.jni.Local;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
@@ -20,6 +22,8 @@ import ru.maksarts.spotifybot.services.YoutubeService;
 import javax.script.ScriptException;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -36,6 +40,7 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
     private VkService vkService;
 
     private static final Pattern patternFile = Pattern.compile("(/link)");
+    private LocalDateTime lastTimestamp = LocalDateTime.now();
 
     public void vkReAuth() throws IOException {
         vkService.vkAuth();
@@ -45,20 +50,24 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
     public AnswerInlineQuery handle(InlineQuery inlineQuery){
         String query = inlineQuery.getQuery().toLowerCase(Locale.ROOT).trim();
         if (!query.isEmpty()) {
-            if (query.charAt(0) == '/') {
+            // чтобы обрабатывались запросы не чаще чем раз в 3 сек
+            if (lastTimestamp.plusSeconds(3).isBefore(LocalDateTime.now())) {
+                lastTimestamp = LocalDateTime.now();
+                if (query.charAt(0) == '/') {
 
-                Matcher matcher = patternFile.matcher(query);
-                if (matcher.find()) {
-                    query = query.replaceAll("(/link )", "");
+                    Matcher matcher = patternFile.matcher(query);
+                    if (matcher.find()) {
+                        query = query.replaceAll("(/link )", "");
+                        Track tracks = spotifyService.getTracks(query);
+                        List<InlineQueryResult> results = makeResults(tracks);
+                        return convertResultsToResponse(inlineQuery, results);
+                    }
+
+                } else {
                     Track tracks = spotifyService.getTracks(query);
-                    List<InlineQueryResult> results = makeResults(tracks);
+                    List<InlineQueryResult> results = makeRealSongsResults(tracks);
                     return convertResultsToResponse(inlineQuery, results);
                 }
-
-            } else {
-                Track tracks = spotifyService.getTracks(query);
-                List<InlineQueryResult> results = makeRealSongsResults(tracks);
-                return convertResultsToResponse(inlineQuery, results);
             }
         }
         return convertResultsToResponse(inlineQuery, new ArrayList<>());
@@ -94,7 +103,7 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
         ArrayList<Item> items = tracks.getItems();
 
         int i = 0;
-        while (i < 3 && i < items.size()) {
+        while (i < 5 && i < items.size()) {
             Item item = items.get(i);
             String artists = makeArtists(item.getArtists());
             String songName = item.getName();
@@ -131,7 +140,6 @@ public class TelegramInlineQuerySpotifyHandler implements TelegramInlineQueryHan
                 ((InlineQueryResultAudio) result).setAudioUrl(audioUrl);
             }
         }).filter(result -> ((InlineQueryResultAudio) result).getAudioUrl() != null).collect(Collectors.toList());
-
         return results;
     }
 

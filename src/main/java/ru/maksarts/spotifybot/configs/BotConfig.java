@@ -60,6 +60,30 @@ public class BotConfig extends TelegramLongPollingBot {
                     }
                     vkReAuthCommand = true;
                 }
+                else if(update.getMessage().getText().equals("/help")){
+                    SendMessage sm = SendMessage.builder()
+                            .chatId(update.getMessage().getChatId())
+                            .text("Бот позволяет делиться песнями из Spotify. \n" +
+                                    "\n" +
+                                    "Для отправки песни - введите поисковой запрос после имени бота, например:\n" +
+                                    "<code>@SpotifyShareSongsBot muse uprising</code>\n" +
+                                    "\n" +
+                                    "Для отправки только ссылки, без mp3 файла, используйте команду /link, например:\n" +
+                                    "<code>@SpotifyShareSongsBot /file muse uprising</code>\n" +
+                                    "\n" +
+                                    "Иногда такое бывает, что mp3-файлы не ищутся :( " +
+                                    "Это вызвано низкой пропускной способностью сервиса, " +
+                                    "откуда они поставляются, мы работаем над этим, но если все же такое случилось - " +
+                                    "переходите на использование команды /link и некоторое время отправляйте только ссылки. " +
+                                    "Обычно проблема исчезает в течение суток и дальше снова можно пользоваться обычным режимом")
+                            .build();
+                    try {
+                        sm.enableHtml(true);
+                        execute(sm);
+                    } catch (TelegramApiException e) {
+                        log.error("TelegramApiException when sending message: {}", e.getMessage(), e);
+                    }
+                }
             }
 
             else if(!update.getMessage().getText().isBlank() && vkReAuthCommand){
@@ -114,6 +138,11 @@ public class BotConfig extends TelegramLongPollingBot {
                 botLogger.send("inline message=" + update.getInlineQuery().getQuery() + ", from=@" + update.getInlineQuery().getFrom().getUserName());
                 try {
                     AnswerInlineQuery answer = inlineQueryHandler.handle(update.getInlineQuery());
+                    if(answer.getResults().size() == 0) {
+                        botLogger.send(String.format("Empty result, query=%s", update.getInlineQuery().getQuery()));
+                        log.warn("Empty result, query={}", update.getInlineQuery().getQuery());
+                    }
+                    answer.setCacheTime(10);
                     execute(answer);
                 } catch (Exception ex) {
                     log.error("Exception while handling inline query: {}", ex.getMessage(), ex);

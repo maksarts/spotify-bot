@@ -12,11 +12,22 @@ import java.util.List;
 
 @Slf4j
 public class BotLoggerConfig extends TelegramLongPollingBot {
+    public enum LogLevels{
+        INFO ("Info"),
+        WARN ("Warn"),
+        ERROR ("Error");
+        private final String title;
+        LogLevels(String title) {
+            this.title = title;
+        }
+    }
 
     private static final String USERNAME = "SpotifyShareSongsLoggerBot";
     private static final String TOKEN = "token"; //TODO в проперти
 
     private static final String CHAT_ID = "399101922"; //TODO в проперти
+
+    private LogLevels logLevel = LogLevels.INFO; //TODO уровни логгирования
 
     @Override
     public void onUpdateReceived(Update update) {
