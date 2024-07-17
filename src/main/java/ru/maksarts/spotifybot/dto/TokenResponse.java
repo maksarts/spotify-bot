@@ -1,9 +1,6 @@
 package ru.maksarts.spotifybot.dto;
 
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
@@ -16,4 +13,6 @@ public class TokenResponse implements Serializable {
     private String error;
     private String error_description;
     private LocalDateTime expireTime;
+    private String refresh_token;
+    private String scope;
 }

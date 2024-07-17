@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: spotify-bot
+
+
+telegram:
+  mainbot:
+    username: SpotifyShareSongsBot
+    token: token
+  loggerbot:
+    username: SpotifyShareSongsLoggerBot
+    token: token
+    chatId: 399101922
+
+spotify:
+  clientId: client
+  secret: secret
+
+vk:
+  login: email
+  password: password

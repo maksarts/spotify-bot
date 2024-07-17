@@ -3,6 +3,8 @@ package ru.maksarts.spotifybot.configs;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.AnswerCallbackQuery;
 import org.telegram.telegrambots.meta.api.methods.AnswerInlineQuery;
@@ -14,6 +16,7 @@ import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQuery
 import org.telegram.telegrambots.meta.api.objects.inlinequery.result.InlineQueryResultArticle;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiRequestException;
+import ru.maksarts.spotifybot.configs.credentials.MainbotProperties;
 import ru.maksarts.spotifybot.handlers.TelegramInlineQueryHandler;
 import ru.maksarts.spotifybot.services.VkService;
 
@@ -23,15 +26,17 @@ import java.util.ArrayList;
 @Slf4j
 public class BotConfig extends TelegramLongPollingBot {
 
-    private static final String USERNAME = "SpotifyShareSongsBot";
-    private static final String TOKEN = "token"; //TODO в проперти
+    private final String USERNAME;
+    private final String TOKEN;
 
     private final TelegramInlineQueryHandler inlineQueryHandler;
     private final BotLoggerConfig botLogger;
 
-    public BotConfig(TelegramInlineQueryHandler inlineQueryHandler, BotLoggerConfig botLogger) {
+    public BotConfig(TelegramInlineQueryHandler inlineQueryHandler, BotLoggerConfig botLogger, String username, String token) {
         this.inlineQueryHandler = inlineQueryHandler;
         this.botLogger = botLogger;
+        this.USERNAME = username;
+        this.TOKEN = token;
     }
 
 
@@ -69,7 +74,7 @@ public class BotConfig extends TelegramLongPollingBot {
                                     "<code>@SpotifyShareSongsBot muse uprising</code>\n" +
                                     "\n" +
                                     "Для отправки только ссылки, без mp3 файла, используйте команду /link, например:\n" +
-                                    "<code>@SpotifyShareSongsBot /file muse uprising</code>\n" +
+                                    "<code>@SpotifyShareSongsBot /link muse uprising</code>\n" +
                                     "\n" +
                                     "Иногда такое бывает, что mp3-файлы не ищутся :( " +
                                     "Это вызвано низкой пропускной способностью сервиса, " +

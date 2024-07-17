@@ -1,6 +1,7 @@
 package ru.maksarts.spotifybot.configs;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -22,12 +23,17 @@ public class BotLoggerConfig extends TelegramLongPollingBot {
         }
     }
 
-    private static final String USERNAME = "SpotifyShareSongsLoggerBot";
-    private static final String TOKEN = "token"; //TODO в проперти
-
-    private static final String CHAT_ID = "399101922"; //TODO в проперти
+    private final String USERNAME;
+    private final String TOKEN;
+    private final String CHAT_ID;
 
     private LogLevels logLevel = LogLevels.INFO; //TODO уровни логгирования
+
+    public BotLoggerConfig(String username, String token, String chatId){
+        this.USERNAME = username;
+        this.TOKEN = token;
+        this.CHAT_ID = chatId;
+    }
 
     @Override
     public void onUpdateReceived(Update update) {
