@@ -103,11 +103,14 @@ public class BotConfig extends TelegramLongPollingBot {
                                 .chatId(update.getMessage().getChatId())
                                 .text("Successfully authenticated in VK")
                                 .build();
-                        botLogger.send(String.format("User @%s evoked VK re-auth successfully", update.getMessage().getFrom().getUserName()));
+                        botLogger.send(String.format("User @%s evoked VK re-auth successfully", update.getMessage().getFrom().getUserName()),
+                                BotLoggerConfig.LogLevels.WARN);
                         try {
                             execute(sm);
                         } catch (TelegramApiException e) {
                             log.error("TelegramApiException when sending message: {}", e.getMessage(), e);
+                            botLogger.send(String.format("TelegramApiException when sending message: %s", e.getMessage()),
+                                    BotLoggerConfig.LogLevels.ERROR);
                         }
 
                     } catch (IOException ex) {
@@ -140,37 +143,27 @@ public class BotConfig extends TelegramLongPollingBot {
         if(update != null && update.hasInlineQuery()){
             if (!update.getInlineQuery().getQuery().isBlank()) {
                 log.info("inlineMessage={}, query={}", update.getInlineQuery().getQuery(), update.getInlineQuery().toString());
-                botLogger.send("inline message=" + update.getInlineQuery().getQuery() + ", from=@" + update.getInlineQuery().getFrom().getUserName());
+                botLogger.send("inline message=" + update.getInlineQuery().getQuery() + ", from=@" + update.getInlineQuery().getFrom().getUserName(),
+                        BotLoggerConfig.LogLevels.INFO);
                 try {
                     AnswerInlineQuery answer = inlineQueryHandler.handle(update.getInlineQuery());
                     if(answer.getResults().size() == 0) {
-                        botLogger.send(String.format("Empty result, query=%s", update.getInlineQuery().getQuery()));
+                        botLogger.send(String.format("Empty result, query=%s", update.getInlineQuery().getQuery()),
+                                BotLoggerConfig.LogLevels.WARN);
                         log.warn("Empty result, query={}", update.getInlineQuery().getQuery());
                     }
                     answer.setCacheTime(10);
                     execute(answer);
                 } catch (Exception ex) {
                     log.error("Exception while handling inline query: {}", ex.getMessage(), ex);
-                    botLogger.sendCode("Exception while handling inline query: " + ex.getMessage());
+                    botLogger.sendCode("Exception while handling inline query: " + ex.getMessage(),
+                            BotLoggerConfig.LogLevels.ERROR);
                 }
             }
         }
 
         if (update != null && update.hasCallbackQuery()) {
             log.info("getCallbackQuery={}", update.getCallbackQuery());
-//            String inlineMessageId =  update.getCallbackQuery().getInlineMessageId();
-//            String chatId =  update.getCallbackQuery().getChatInstance();
-//            String data = update.getCallbackQuery().getData();
-//
-//            AnswerCallbackQuery close = AnswerCallbackQuery.builder()
-//                    .callbackQueryId(update.getCallbackQuery().getId()).build();
-//
-//            try {
-//                execute(close);
-//            } catch (Exception ex) {
-//                log.error("Exception while handling inline query: {}", ex.getMessage(), ex);
-//                botLogger.sendCode("Exception while handling inline query: " + ex.getMessage());
-//            }
         }
         if (update != null && update.hasChosenInlineQuery()){
 //            log.info("getChosenInlineQuery={}", update.getChosenInlineQuery());
