@@ -47,10 +47,10 @@ public class VkService {
     public void vkAuth() throws IOException {
         log.info("Authentication in VK");
         try {
-            ProcessBuilder processBuilder = new ProcessBuilder("python",
-                                                                        "pyscripts/vk_audio_auth.py",
-                                                                        "--login", props.getLogin(),
-                                                                        "--password", props.getPassword());
+            ProcessBuilder processBuilder = new ProcessBuilder("python3",
+                                                                "pyscripts/vk_audio_auth.py",
+                                                                "--login", props.getLogin(),
+                                                                "--password", props.getPassword());
             processBuilder.redirectErrorStream(true);
             Process process = processBuilder.start();
 
@@ -93,11 +93,11 @@ public class VkService {
         if(vkAuthInfo != null) {
             try {
 
-                ProcessBuilder processBuilder = new ProcessBuilder("python",
-                        "pyscripts/vk_audio_script.py",
-                        "--query", artist + " - " + songName,
-                        "--token", vkAuthInfo.getToken(),
-                        "--user_agent", vkAuthInfo.getUserAgent());
+                ProcessBuilder processBuilder = new ProcessBuilder("python3",
+                                                                    "pyscripts/vk_audio_script.py",
+                                                                    "--query", artist + " - " + songName,
+                                                                    "--token", vkAuthInfo.getToken(),
+                                                                    "--user_agent", vkAuthInfo.getUserAgent());
                 processBuilder.redirectErrorStream(true);
                 Process process = processBuilder.start();
 

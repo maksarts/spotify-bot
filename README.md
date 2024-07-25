@@ -5,7 +5,9 @@
  - Interaction with Telegram API
  - Interaction with Spotify API
  - Sending search requests from telegram inline mode
- - Sending Spotify songs links in telegram chats
-### // TODO:
+ - Sending Spotify songs links in telegram chats 
  - Sending mp3 files with links
- - Deploy via Docker
+ - Dockerfile
+### // TODO:
+ - Optimizing
+ - Caching with Redis
