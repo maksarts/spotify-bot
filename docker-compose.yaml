@@ -1,0 +1,21 @@
+version: '3.7'
+
+services:
+  spotifybotcore:
+
+    image: maksarts/spotify-bot:1.0.0
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+
+    networks:
+      core:
+        aliases:
+          - "spotifybot"
+
+networks:
+  core:
+    driver: bridge
