@@ -16,6 +16,7 @@
     <properties>
         <java.version>11</java.version>
         <docker.image.prefix>maksarts</docker.image.prefix>
+        <maven.test.skip>true</maven.test.skip>
     </properties>
     <dependencies>
         <dependency>

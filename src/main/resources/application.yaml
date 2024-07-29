@@ -6,16 +6,16 @@ spring:
 telegram:
   mainbot:
     username: SpotifyShareSongsBot
-    token: token
+    token: ${TELEGRAM_MAIN_TOKEN}
   loggerbot:
     username: SpotifyShareSongsLoggerBot
-    token: token
-    chatId: 399101922
+    token: ${TELEGRAM_LOG_TOKEN}
+    chatId: ${TELEGRAM_LOG_CHATID}
 
 spotify:
-  clientId: client
-  secret: secret
+  clientId: ${SPOTIFY_CLIENT}
+  secret: ${SPOTIFY_SECRET}
 
 vk:
-  login: email
-  password: password
+  login: ${VK_LOGIN}
+  password: ${VK_PASSWORD}
