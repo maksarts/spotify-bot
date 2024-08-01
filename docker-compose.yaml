@@ -1,0 +1,28 @@
+version: '3.7'
+
+services:
+  spotifybotcore:
+
+    image: ghcr.io/maksarts/spotify-bot:1.0.0
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      - "SPRING_PROFILES_ACTIVE=dev"
+      - TELEGRAM_MAIN_TOKEN=${TELEGRAM_MAIN_TOKEN}
+      - TELEGRAM_LOG_TOKEN=${TELEGRAM_LOG_TOKEN}
+      - TELEGRAM_LOG_CHATID=${TELEGRAM_LOG_CHATID}
+      - SPOTIFY_CLIENT=${SPOTIFY_CLIENT}
+      - SPOTIFY_SECRET=${SPOTIFY_SECRET}
+      - VK_LOGIN=${VK_LOGIN}
+      - VK_PASSWORD=${VK_PASSWORD}
+
+    networks:
+      core:
+        aliases:
+          - "spotifybot"
+
+networks:
+  core:
+    driver: bridge

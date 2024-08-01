@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: spotify-bot
+
+
+telegram:
+  mainbot:
+    username: SpotifyShareSongsBot
+    token: ${TELEGRAM_MAIN_TOKEN}
+  loggerbot:
+    username: SpotifyShareSongsLoggerBot
+    token: ${TELEGRAM_LOG_TOKEN}
+    chatId: ${TELEGRAM_LOG_CHATID}
+
+spotify:
+  clientId: ${SPOTIFY_CLIENT}
+  secret: ${SPOTIFY_SECRET}
+
+vk:
+  login: ${VK_LOGIN}
+  password: ${VK_PASSWORD}
