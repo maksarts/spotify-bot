@@ -3,7 +3,7 @@ version: '3.7'
 services:
   spotifybotcore:
 
-    image: maksarts/spotify-bot:1.0.0
+    image: ghcr.io/maksarts/spotify-bot:1.0.0
 
     ports:
       - "8080:8080"
